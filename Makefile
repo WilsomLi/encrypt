@@ -3,8 +3,8 @@ PARAMSTD=-g
 PARAMOBJ=-c
 
 
-all: crypto.h crypto.c crypto.o xxtea.c
-	$(CXX) $(PARAMSTD) -o xxtea xxtea.c crypto.o
+all: crypto.h crypto.c crypto.o main.c
+	$(CXX) $(PARAMSTD) -o xxtea main.c crypto.o
 
 crypto.o: crypto.c crypto.h
 	$(CXX) $(PARAMSTD) $(PARAMOBJ) crypto.c
