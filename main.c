@@ -45,24 +45,6 @@ int print_opterr(int opt)
     return 1;
 }
 
-#define S_KEY_LEN 32
-#define S_KEY_CAP (S_KEY_LEN + 1)
-#define S_PART_LEN 8
-#define S_PART_CAP (S_PART_LEN + 1)
-
-uint32_t parse_key_part(char *s_key, size_t offset)
-{
-    char s_part [S_PART_CAP];
-    
-    strncpy(s_part, s_key + offset, S_PART_LEN);
-    s_part[S_PART_LEN] = '\0';
-    
-    assert(sizeof(unsigned long) >= 4);
-    return (uint32_t) strtoul(s_part, NULL, 16);
-}
-
-#define KEY_PARTS_COUNT 4
-
 int read_key(char *keyfile, uint32_t *key)
 {
     char s_key [S_KEY_CAP];
@@ -91,9 +73,6 @@ int read_key(char *keyfile, uint32_t *key)
     }
     return 1;
 }
-
-#define BLOCK_SIZE 512
-#define CRYPT_ATONCE_SIZE 128
 
 int crypt_file(char *infile, char *outfile, char *keyfile)
 {
@@ -166,6 +145,7 @@ int decrypt_file(char *infile, char *outfile, char *keyfile)
         return 1;
     }
     
+    
     f = fopen (infile, "rb");
     if(f == NULL) {
         fprintf(stderr, "No input file '%s' found.\n", infile);
@@ -184,21 +164,27 @@ int decrypt_file(char *infile, char *outfile, char *keyfile)
     rewind(f);
     char* data = (char*)malloc(sizeof(char)*len);
     fread(data,sizeof(char),len,f);
-    long cnt = len / BLOCK_SIZE;
-    for(int i=0; i<cnt; i++)
-    {
-//        stpncpy(block, data+i*BLOCK_SIZE, BLOCK_SIZE);
-        memcpy(block,data+i*BLOCK_SIZE,BLOCK_SIZE);
-        xxdecrypt((uint32_t *)block, CRYPT_ATONCE_SIZE, key);
-        size = fwrite(block, sizeof(char), BLOCK_SIZE, of);
-        if (size < BLOCK_SIZE)
-        {
-            fprintf(stderr, "Error while writing into '%s'.\n", outfile);
-            fclose(f);
-            fclose(of);
-            return 1;
-        }
-    }
+    
+        
+//    parseKey("SAMAN2016EEDBEEF0123456789ABCDEF", key);
+    xxdecryptbin(data, len, key);
+    fwrite(data, sizeof(char), len, of);
+    
+//    long cnt = len / BLOCK_SIZE;
+//    for(int i=0; i<cnt; i++)
+//    {
+////        stpncpy(block, data+i*BLOCK_SIZE, BLOCK_SIZE);
+//        memcpy(block,data+i*BLOCK_SIZE,BLOCK_SIZE);
+//        xxdecrypt((uint32_t *)block, CRYPT_ATONCE_SIZE, key);
+//        size = fwrite(block, sizeof(char), BLOCK_SIZE, of);
+//        if (size < BLOCK_SIZE)
+//        {
+//            fprintf(stderr, "Error while writing into '%s'.\n", outfile);
+//            fclose(f);
+//            fclose(of);
+//            return 1;
+//        }
+//    }
     
     
     // while ((size = fread(block, sizeof(uint8_t), BLOCK_SIZE, f)) == BLOCK_SIZE)
